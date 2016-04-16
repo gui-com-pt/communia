@@ -6,11 +6,9 @@
     "autoload": {
         "psr-4": {
           "Pi\\": "src/Pi",
-          "Pi\\Common\\": "src/Pi-Common",
           "Pi\\Interfaces\\": "src/Pi-Interfaces",
           "Mocks\\": "tests/Mocks",
           "Mocks\\Hydrators\\": "/tmp",
-          "Test\\Common\\": "tests/Pi-Common",
           "Test\\": "tests/Pi"
         }
     },
