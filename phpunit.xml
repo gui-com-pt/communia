@@ -1,0 +1,23 @@
+<phpunit bootstrap="tests/bootstrap.php"
+    colors="true"
+    convertErrorsToExceptions="true"
+    convertNoticesToExceptions="true"
+    convertWarningsToExceptions="true"
+    processIsolation="false">
+    <testsuites>
+        <testsuite name="Core">
+          <directory>tests/Pi</directory>
+        </testsuite>
+        <testsuite name="Common">
+          <directory>tests/Pi-Common</directory>
+        </testsuite>
+    </testsuites>
+    <php>
+        <server name="REQUEST_URI" value="/testi" />
+        <server name="REQUEST_METHOD" value="GET" />
+        <server name="HTTP_X_FORWARDED_FOR" value="" />
+        <server name="SERVER_NAME" value="localhost" />
+        <server name="SERVER_PORT" value="80" />
+        <const name="PHPUNIT_PI_DEBUG" value="true"/>
+    </php>
+</phpunit>

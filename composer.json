@@ -1,0 +1,20 @@
+{
+    "name": "guilhermegeek/pi-common",
+    "require": {
+        
+    },
+    "autoload": {
+        "psr-4": {
+          "Pi\\": "src/Pi",
+          "Pi\\Common\\": "src/Pi-Common",
+          "Pi\\Interfaces\\": "src/Pi-Interfaces",
+          "Mocks\\": "tests/Mocks",
+          "Mocks\\Hydrators\\": "/tmp",
+          "Test\\Common\\": "tests/Pi-Common",
+          "Test\\": "tests/Pi"
+        }
+    },
+    "require-dev": {
+        "phpunit/phpunit": "~4.5"
+    }
+}
