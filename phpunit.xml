@@ -5,13 +5,13 @@
     convertWarningsToExceptions="true"
     processIsolation="false">
     <testsuites>
-        <testsuite name="Core">
+        <testsuite name="All">
           <directory>tests/Pi</directory>
         </testsuite>
-        <testsuite name="Common">
-          <directory>tests/Pi-Common</directory>
-        </testsuite>
     </testsuites>
+     <listeners>
+        <listener class="Pi_Common_CommonBaseListener" file="./tests/Pi/Common/CommonBaseListener.php"></listener>
+    </listeners>
     <php>
         <server name="REQUEST_URI" value="/testi" />
         <server name="REQUEST_METHOD" value="GET" />
