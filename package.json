@@ -1,5 +1,5 @@
 {
-  "name": "pi-common",
+  "name": "communia",
   "version": "0.0.1",
   "description": "Common libraries",
   "directories": {
@@ -10,12 +10,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/guilhermegeek/pi-common"
+    "url": "https://github.com/guilhermegeek/communia"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/guilhermegeek/pi-common/issues"
+    "url": "https://github.com/guilhermegeek/communia/issues"
   },
-  "homepage": "https://github.com/guilhermegeek/pi-common"
+  "homepage": "https://github.com/guilhermegeek/communia"
 }

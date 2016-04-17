@@ -1,9 +1,9 @@
-Pi Common
+Communia
 ====================
 
 A common library i created from [pi-framework](https://github.com/guilhermegeek/pi-framework) and i reused in others projects.
 
-This library contains common classes and interfaces i implement.
+A set of tools and common implementations/interfaces i use as well.
 
 ## Http Request
 
