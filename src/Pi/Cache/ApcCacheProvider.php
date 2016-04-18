@@ -9,7 +9,7 @@ use Pi\Interfaces\ICacheProvider;
 
 class ApcCacheProvider implements ICacheProvider {
 	
-	const CACHE_PREFIX = 'app::';
+	const CACHE_PREFIX = 'cache::';
 
 	public bool $enabled = false;
 

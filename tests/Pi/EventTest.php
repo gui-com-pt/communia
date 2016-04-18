@@ -3,8 +3,7 @@ use Pi\EventManager;
 use Mocks\EventSubscribeTest;
 use Mocks\EventTestArgs;
 
-class EventManagerTest
-  extends \PHPUnit_Framework_TestCase  {
+class EventManagerTest extends \PHPUnit_Framework_TestCase  {
 
   protected $manager;
 
