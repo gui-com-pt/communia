@@ -9,7 +9,7 @@ use Pi\Interfaces\ICacheProvider;
 
 class ApcCacheProvider implements ICacheProvider {
 	
-	const CACHE_PREFIX = 'app::';
+	const CACHE_PREFIX = 'cache::';
 
 	public bool $enabled = false;
 
@@ -31,6 +31,11 @@ class ApcCacheProvider implements ICacheProvider {
 	public function get($key = null) : ?mixed
 	{
 		return apc_fetch(self::CACHE_PREFIX.$key);
+	}
+
+	public function getObject($key = null) : ?mixed
+	{
+		return $this->get($key);
 	}
 
 	/**

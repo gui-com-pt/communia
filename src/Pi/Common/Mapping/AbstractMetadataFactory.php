@@ -13,25 +13,25 @@ use Pi\Interfaces\IContainer,
 
 abstract class AbstractMetadataFactory implements IEntityMetaDataFactory, IContainable {
 
-	private $documentManager;
+  private $documentManager;
 
-	private $entityMeta;
+  private $entityMeta;
 
-	private $loadedMetadata;
+  private $loadedMetadata;
 
-	private $initialized = false;
+  private $initialized = false;
 
   const CACHE_KEY = 'metadata::';
 
-	public function __construct(
+  public function __construct(
     protected ICacheProvider $cacheProvider,
-		protected EventManager $eventManager,
-	    protected IMappingDriver $mappingDriver)
-	{
-		$this->loadedMetadata = Map{};
-	}
+    protected EventManager $eventManager,
+      protected IMappingDriver $mappingDriver)
+  {
+    $this->loadedMetadata = Map{};
+  }
 
-	public abstract function newEntityMetadataInstance(string $documentName);
+  public abstract function newEntityMetadataInstance(string $documentName);
   
   public function ioc(IContainer $container)
   {
@@ -78,7 +78,13 @@ abstract class AbstractMetadataFactory implements IEntityMetaDataFactory, IConta
 
   protected function cache(DtoMetadataInterface $class)
   {
-    $this->cacheProvider->set(self::CACHE_KEY . $class->getName(), $class);
+    try {
+      $this->cacheProvider->set(self::CACHE_KEY . $class->getName(), $class);  
+    }
+    catch(\Exception $ex) {
+      die('error with '.get_class($class).$ex->getMessage());
+    }
+    
   }
 
   protected function loadMetadata(string $name)
@@ -100,6 +106,7 @@ abstract class AbstractMetadataFactory implements IEntityMetaDataFactory, IConta
     $this->setMetadataFor($className, $class);
 
     $loaded[] = $className;
+    
     $this->cache($class);
 
     return $class;
