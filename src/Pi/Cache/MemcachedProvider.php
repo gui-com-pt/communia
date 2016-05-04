@@ -66,78 +66,79 @@ class MemcachedProvider implements ICacheProvider, InitializeInterface {
 		return (array)$this->get($key);
 	}
 
-	 /**
-    * Push the value to the given key
-    * If key not exists, create a new array
-    * @param string $key the array key
-    * @return void
-    */
-    public function push(string $key, string $value) : void
-    {
-    	$list = $this->get($key);
-  		if($list == null) {
-  			$list = array();
-  		}
-  		array_push($list, $value);
-  		$this->set($key, $value);
-    }
+ /**
+  * Push the value to the given key
+  * If key not exists, create a new array
+  * @param string $key the array key
+  * @return void
+  */
+  public function push(string $key, string $value) : void
+  {
+  	$list = $this->get($key);
+		if($list == null) {
+			$list = array();
+		}
+		array_push($list, $value);
+		$this->set($key, $value);
+  }
 
-    /**
-     * Push the object to the given key
-     * If the key not exists, create a new array
-     * @param string $key the array key
-     * @param mixed $obj the object
-     * @return void
-     */
-    public function pushObject(string $key, mixed $obj) : void
-  	{
+  /**
+   * Push the object to the given key
+   * If the key not exists, create a new array
+   * @param string $key the array key
+   * @param mixed $obj the object
+   * @return void
+   */
+  public function pushObject(string $key, mixed $obj) : void
+	{
 
-  	}
-
-  	/**
-	 * Get the object for the given key
-     * @param string $key the array key
-     * @return ?mixed the object or null if not exists
-     */
-    public function getObject(string $key) : ?mixed
-    {
-    	return $this->get($key);
-    }
-
-    /**
-     * Get the map for the given key
-     * @param string $key the array key
-     * @return ?Map<string,string> the map, if not exists null
-     */
-    public function getMap(string $key) : ?Map<string,string>
-    {
-    	$map = $this->get($key);
-    	return unserialize($map);
-    }
-
-    /**
-     * Push the given key and value to array key
-     * @param string $key the array key
-     * @param string $mapKey the map key
-     * @param string $mapValue the map value
-     * @return void
-     */
-    public function pushMap(string $key, string $mapKey, string $mapValue) : void
-    {
-    	$map = $this->get($key);
-    	if($map == $null) {
-    		$map = Map{};
-    	}
-    	$map->add(Pair{$mapKey, $mapValue});
-    }
+	}
 
 	/**
-     * Indicates if the given key exists
-     * @param string $key the key name
-     * @return bool true if the key exits
-     */
-  	public function contains($key) : bool
-  	{
-  		return $this->mem->get($key) != null;
+ * Get the object for the given key
+   * @param string $key the array key
+   * @return ?mixed the object or null if not exists
+   */
+  public function getObject(string $key) : ?mixed
+  {
+  	return $this->get($key);
+  }
+
+  /**
+   * Get the map for the given key
+   * @param string $key the array key
+   * @return ?Map<string,string> the map, if not exists null
+   */
+  public function getMap(string $key) : ?Map<string,string>
+  {
+  	$map = $this->get($key);
+  	return unserialize($map);
+  }
+
+  /**
+   * Push the given key and value to array key
+   * @param string $key the array key
+   * @param string $mapKey the map key
+   * @param string $mapValue the map value
+   * @return void
+   */
+  public function pushMap(string $key, string $mapKey, string $mapValue) : void
+  {
+  	$map = $this->get($key);
+  	if($map == $null) {
+  		$map = Map{};
   	}
+  	$map->add(Pair{$mapKey, $mapValue});
+    $this->set($key, serialize($map));
+  }
+
+/**
+   * Indicates if the given key exists
+   * @param string $key the key name
+   * @return bool true if the key exits
+   */
+	public function contains($key) : bool
+	{
+		return $this->mem->get($key) != null;
+	}
 }

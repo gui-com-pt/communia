@@ -19,7 +19,7 @@ abstract class AbstractFieldMapping implements DtoMappingMetadataInterface {
 	*/
 	protected $type;
 
-	protected $opts;
+	public Map<string,mixed>$opts;
 
 	protected $embeded;
 
@@ -41,7 +41,7 @@ abstract class AbstractFieldMapping implements DtoMappingMetadataInterface {
 
 	public function __construct()
 	{
-		$this->opts = Set{};
+		$this->opts = Map{};
 	}
 
 	public function setReferenceOne()

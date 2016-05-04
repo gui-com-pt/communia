@@ -33,6 +33,11 @@ class ApcCacheProvider implements ICacheProvider {
 		return apc_fetch(self::CACHE_PREFIX.$key);
 	}
 
+	public function getObject($key = null) : ?mixed
+	{
+		return $this->get($key);
+	}
+
 	/**
 	 * Set the value of the given key
 	 * @param string $key   the key

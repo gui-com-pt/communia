@@ -17,7 +17,6 @@ use Pi\EventManager,
 
 
 abstract class AbstractMappingDriver implements IContainable, IMappingDriver {
-
     
   public function __construct(
     protected array $paths = array(), 
@@ -28,14 +27,14 @@ abstract class AbstractMappingDriver implements IContainable, IMappingDriver {
     $this->paths = array();
   }
 
-	public function loadMetadataForClass(string $className, DtoMetadataInterface $entity)
-	{
-		$reflClass = $entity->getReflectionClass();
-		$parent =  $reflClass->getParentClass();
-		$this->mapBaseMappings($entity, $reflClass);
-		$methods = $this->getClassMethods($entity);
-		$this->mapBaseEntityAttributes($entity, $reflClass);
-	}
+  public function loadMetadataForClass(string $className, DtoMetadataInterface $entity)
+  {
+    $reflClass = $entity->getReflectionClass();
+    $parent =  $reflClass->getParentClass();
+    $this->mapBaseMappings($entity, $reflClass);
+    $methods = $this->getClassMethods($entity);
+    $this->mapBaseEntityAttributes($entity, $reflClass);
+  }
 
   public function ioc(IContainer $container){
     

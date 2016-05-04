@@ -5,9 +5,10 @@ namespace Pi\Common\Mapping;
 	use Pi\Interfaces\DtoMetadataInterface,
 		Pi\Interfaces\DtoMappingMetadataInterface;
 
-abstract class AbstractMetadata implements DtoMetadataInterface {
+abstract class AbstractMetadata implements DtoMetadataInterface{
 	
 	public $reflClass;
+
 
 	public $reflFields;
 
@@ -58,12 +59,39 @@ abstract class AbstractMetadata implements DtoMetadataInterface {
 		$this->name = $documentName;
 		$this->fieldMappings = array();
 	}
+	
+	/**
+	 * Magic function for serialization
+	 * Ignore \ReflectionClass as it can't be serialized
+	 */
+	public function __sleep()
+	{
+		return array('namespace', 'name', 'fieldMappings');
+	}
 
+	/**
+	 * Initializes \ReflectionClass (name is already unserialized)
+	 */
+	public function __wakeup()
+	{
+		if($this->reflClass == null) {
+			$this->reflClass = new \ReflectionClass($this->name);
+		}
+	}
+
+	/**
+	 * Indicates if this Metadata has a field mapped
+	 * @param string $fieldName the field name
+	 */
 	public function hasField(string $fieldName) : bool
 	{
 		return $this->fieldsMapping->contains($fieldName);
 	}
 
+	/**
+	 * Set the identifier for the Metadata
+	 * @param string $name The identifier
+	 */
 	public function setId(string $name)
 	{
 		$this->id = $name;

@@ -85,11 +85,11 @@ interface ServiceControllerInterface {
 	 * @param  string      $requestType The Request DTO class name
 	 * @param  string      $serviceType The Service class name
 	 * @param  string      $method      The function method of the current $requestType
-	 * @param  IHasFactory $factory     The service instance
+	 * @param  IHasFactory $service     The service instance
 	 */
 	public function registerServiceExecutor(
 		string $requestType, string $serviceType, 
-		string $method, IService $service
+		string $method, IHasFactory $service
 	) : void;
 
 	/**
