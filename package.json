@@ -1,7 +1,7 @@
 {
   "name": "communia",
-  "version": "0.0.1",
-  "description": "Common libraries",
+  "version": "v0.2",
+  "description": "Common libraries from Pi Framework",
   "directories": {
     "test": "tests"
   },
