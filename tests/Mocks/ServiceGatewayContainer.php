@@ -12,7 +12,7 @@ use Pi\InProcessServiceGateway,
 
 class ServiceGatewayContainer {
 	
-	public function getServiceGateway(IRequest $req, ?IContainer $container = null)
+	public static function getServiceGateway(IRequest $req, ?IContainer $container = null)
 	{
 		if(is_null($container)) {
 			return new InProcessServiceGateway($req);

@@ -5,7 +5,7 @@ namespace Pi\Interfaces;
 
 
 
-class ServiceGatewayFactoryInterface {
+interface ServiceGatewayFactoryInterface {
 	
 	public function getServiceGateway(IRequest $req) : ServiceGatewayInterface;
 }

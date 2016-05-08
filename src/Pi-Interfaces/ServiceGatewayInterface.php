@@ -5,14 +5,14 @@ namespace Pi\Interfaces;
 
 
 
-class ServiceGatewayInterface {
+interface ServiceGatewayInterface {
 	
 	public function send(mixed $requestDto) : mixed;
 
-	public function sendAll(Vector<mixed> $requestDtos);
+	public function sendAll(array<mixed> $requestDtos) : Vector<mixed>;
 
-	public function publish(mixed $requestDto);
+	public function publish(mixed $requestDto) : mixed;
 
-	public function publishAll(Set<mixed> $requestDtos);
+	public function publishAll(array<mixed> $requestDtos) : Vector<mixed>;
 	
 }
