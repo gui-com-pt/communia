@@ -87,7 +87,7 @@ abstract class AbstractMetadataFactory implements IEntityMetaDataFactory, IConta
     
   }
 
-  protected function loadMetadata(string $name)
+  public function loadMetadata(string $name)
   {
     if ( ! $this->initialized) {
         $this->initialize();
