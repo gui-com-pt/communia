@@ -1,6 +1,6 @@
 <?hh
 
-namespace Pi\Interface;
+namespace Pi\Interfaces;
 
 interface VerbInterface {
 	

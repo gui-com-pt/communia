@@ -56,8 +56,8 @@ abstract class AbstractMetadataFactory implements IEntityMetaDataFactory, IConta
     if($this->loadedMetadata->contains($className)){
       return $this->loadedMetadata->get($className);
     }
-
-    return $this->loadFromCached($className) ?: $this->loadMetadata($className);
+    return $this->loadMetadata($className);
+    //return $this->loadFromCached($className) ?: $this->loadMetadata($className);
   }
 
 

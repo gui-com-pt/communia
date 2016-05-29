@@ -28,6 +28,11 @@ class EventManager
 
     public function dispatch($name, ?IEventArgs $args)
     {
+      if(is_array($name)) {
+        foreach ($name as $value) {
+          $this->dispatch($value);
+        }
+      }
 
       if(isset($this->listeners[$name])) {
         $args = is_null($args) ? EventArgs::getInstance() : $args;

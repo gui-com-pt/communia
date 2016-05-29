@@ -2,37 +2,39 @@
 
 namespace Pi\Common\Mapping;
 
-	use Pi\Interfaces\DtoMetadataInterface,
-		Pi\Interfaces\DtoMappingMetadataInterface;
+use Pi\Interfaces\DtoMetadataInterface,
+	Pi\Interfaces\DtoMappingMetadataInterface;
+
+
+
 
 abstract class AbstractMetadata implements DtoMetadataInterface{
 	
-	public $reflClass;
-
+	public \ReflectionClass $reflClass;
 
 	public $reflFields;
 
-	public $id;
+	public string $id;
 
 	/**
 	 * The name of the document class
 	 */
-	public $name;
+	public string $name;
 
 	/**
 	 * The class namespace
 	 */
-	public $namespace;
+	public string $namespace;
 
-	public $identifier;
+	public string $identifier;
 
-	public $fieldMappings;
+	public array $fieldMappings;
 
-	protected $isFile = false;
+	protected bool $isFile = false;
 
-	protected $multiTenantEnabled = false;
+	protected bool $multiTenantEnabled = false;
 
-	protected $multiTenantField;
+	protected string $multiTenantField;
 
 	protected string $defaultDiscriminatorValue;
 
@@ -40,17 +42,18 @@ abstract class AbstractMetadata implements DtoMetadataInterface{
 
   	protected string $inheritanceType;
 
-	protected $isSuperclass = false;
-
+	protected bool $isSuperclass = false;
 
 	/**
 	 * Whether this class describes the mapping of a embedded document.
 	 */
-	public $isEmbeddedDocument = false;
+	public bool $isEmbeddedDocument = false;
 
-	public $embeddedDocument;
+	public bool $embeddedDocument;
 
-	public $reference = false;
+	public bool $reference = false;
+
+	public Map<string,mixed> $opts;
 
 	public function __construct(string $documentName)
 	{
@@ -58,6 +61,7 @@ abstract class AbstractMetadata implements DtoMetadataInterface{
 		$this->namespace = $this->reflClass->getNamespaceName();
 		$this->name = $documentName;
 		$this->fieldMappings = array();
+		$this->opts = Map{};
 	}
 	
 	/**
@@ -255,6 +259,11 @@ abstract class AbstractMetadata implements DtoMetadataInterface{
 	public function mappings() : array
 	{
 		return $this->fieldMappings;
+	}
+
+	public function opts() : Map<string,mixed>
+	{
+		return $this->opts;
 	}
 
 	public function mapField(DtoMappingMetadataInterface $mapping) : void

@@ -19,7 +19,7 @@ abstract class AbstractFieldMapping implements DtoMappingMetadataInterface {
 	*/
 	protected $type;
 
-	public Map<string,mixed>$opts;
+	public Map<string,mixed> $opts = Map{};
 
 	protected $embeded;
 
@@ -38,11 +38,6 @@ abstract class AbstractFieldMapping implements DtoMappingMetadataInterface {
 	protected ?string $inheritanceType;
 
 	protected ?string $discriminatorField;
-
-	public function __construct()
-	{
-		$this->opts = Map{};
-	}
 
 	public function setReferenceOne()
 	{
@@ -140,9 +135,16 @@ abstract class AbstractFieldMapping implements DtoMappingMetadataInterface {
 		return $this->opts->contains('notNull');
 	}
 
+	public function opts() : map<string,mixed>
+	{
+		return $this->opts;
+	}
+
 	public function setIsNotNull() : void
 	{
-		$this->opts->add('notNull');
+		if(is_null($this->opts))
+			die(print_r($this->opts));
+		$this->opts->add(Pair{'isNotNull', 'true'});
 	}
 
 	public function setDateTime()

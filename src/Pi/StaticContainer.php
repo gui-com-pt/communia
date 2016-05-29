@@ -12,7 +12,9 @@ use Pi\ReuseScope,
     Pi\Interfaces\DtoMetadataInterface,
     Pi\Validation\AbstractValidator,
     Pi\Host\HostProvider,
-    Pi\Common\Mapping\HydratorPoviderBase;
+    Pi\Common\Mapping\HydratorPoviderBase,
+    Pi\Odm\MongoRepository,
+    Pi\Odm\Interfaces\MongoManagerInterface;
 
 
 
@@ -36,7 +38,9 @@ class StaticContainer implements IContainer {
 
   protected array $aliases;
 
-  protected array $aliasesRepo;  
+  protected array $aliasesRepo;
+
+  protected $rflClass = array();
 
   use HydratorPoviderBase {
     HydratorPoviderBase::__construct as __hydratorConstruct;
@@ -123,7 +127,7 @@ class StaticContainer implements IContainer {
   {
     $type = get_class($class);
     $this->registered[$typeAs] = $type;
-    $this->aliases[$type] = $typeAs;
+    $this->aliases[$typeAs] = $type;
     $this->instances[$typeAs] = $class;
   }
 
@@ -145,6 +149,9 @@ class StaticContainer implements IContainer {
    */
   public function get(string $type) : mixed
   {
+    if($type == 'Pi\Interfaces\IContainer' || $type == 'Pi\StaticContainer') {
+      return $this;
+    }
     if(isset($this->instances[$type])) {
       return $this->instances[$type];
     } else if(isset($this->aliases[$type]) && isset($this->instances[$this->aliases[$type]])) {
@@ -159,41 +166,76 @@ class StaticContainer implements IContainer {
       }
     }
     
+    $instance = null;
     if(is_callable($this->registered[$type])) {
-      return $this->instances[$type] = $this->registered[$type]($this);
+      $instance = $this->instances[$type] = $this->registered[$type]($this);
     } else if($this->registered[$type] === true) {
-      return self::createInstance($this, $type, InjectionScope::Constructor);
+      $instance = self::createInstance($this, $type, InjectionScope::Constructor);
     } else if(is_string($this->registered[$type])) {
-      return $this->instances[$type] = self::createInstance($this, $this->registered[$type], InjectionScope::Constructor);
+      $instance = $this->instances[$type] = self::createInstance($this, $this->registered[$type], InjectionScope::Constructor);
     }
+
+    if($instance instanceof MongoRepository) {
+      $repoClass = get_class($instance);
+      $entityClass = $this->getRepositoryAlias($repoClass);
+      $dm = $this->get(MongoManagerInterface::class);
+      $class = $dm->getClassMetadata($entityClass);
+
+      if(is_null($class)) {
+        throw new \InvalidArgumentException("Couldn't get Metadata for Repository $repositoryClass");
+      }
+
+      $instance->setClassMetadata($class);
+      $instance->ioc($this);
+    }
+    
+    return $instance;    
+  }
+
+   public function getRepositoryByNamespace(string $namespace)
+  {
+    if(!isset($this->aliasesRepo[$namespace])) {
+
+      return;
+    }
+
+    return $this->getRepository($this->aliasesRepo[$namespace]);
+  }
+
+  public function getRepository($entityInstance)
+  {
+
+    if(!is_string($entityInstance)){
+      $entityInstance = get_class($entityInstance);
+    }
+
+    return $this->get($entityInstance);
   }
 
 
   public function registerRepository(string $entityClass, string $repositoryClass, $namespace = null) : void
   {
-
-    $name = $repositoryClass;
     $fn = function(IContainer $ioc) use($repositoryClass, $entityClass) {
       $repositoryInstance = StaticContainer::createInstance($this, $repositoryClass, InjectionScope::Public);
-      $dm = $ioc->get('MongoManager');
-
-      if($dm === null) {
-        throw new \Exception('The MongoManager dependency isnt registered.');
-      }
-
-      $class = $dm->getClassMetadata($entityClass);
-
-      $repositoryInstance->setClassMetadata($class);
-
-      $repositoryInstance->ioc($this);
-
+      
       return $repositoryInstance;
     };
 
-    if(!isset($this->registered[$name])) { // Not registered yet in IOC
-      $this->registered[$name] = $fn;
+    if(!isset($this->registered[$repositoryClass])) { // Not registered yet in IOC
+      $this->registered[$repositoryClass] = $fn;
     }
-    $this->aliasesRepo[$name] = $entityClass;
+    $this->aliasesRepo[$repositoryClass] = $entityClass;
+  }
+
+  public function getRepositoryAlias(string $repositoryClassName) : string
+  {
+    if(array_key_exists($repositoryClassName, $this->aliasesRepo)) {
+      return $this->aliasesRepo[$repositoryClassName];  
+    } else if(array_key_exists($repositoryClassName, $this->aliases)) {
+      $alias = $this->aliases[$repositoryClassName];
+      return $this->getRepositoryAlias($alias);
+    }
+    
   }
 
   /**
@@ -257,7 +299,7 @@ class StaticContainer implements IContainer {
 
   public function hydrate($document, $data)
   {
-
+    
   }
 
   public function generateHydratorClass(array $map, string $hydratorClassName, string $fileName)
@@ -265,13 +307,25 @@ class StaticContainer implements IContainer {
     $code = '';
     $hydratorNamespace = $this->hydratorNamespace;
     $className = $map['className'];
+    $original = $map['className'];
+    
     
     foreach ($map['dependencies'] as $dependencyClass) {
+
+      if(array_key_exists($className, $this->registered) && is_string($this->registered[$className])) {
+        $className = $this->registered[$className];
+      }
       $code .= sprintf(<<<EOF
-    \$dependencies[] = \$this->container->get('$dependencyClass');
+  if(in_array('Pi\Odm\Interfaces\ICollectionRepository', class_implements('\\$dependencyClass'))) {
+        \$dependencies[] = \$dep = \$this->container->getRepository('$dependencyClass');
+      } else {
+        \$dependencies[] = \$this->container->get('$dependencyClass');
+      }
 EOF
-      );
+     );  
     }
+      
+    
 
     $code = sprintf(<<<EOF
 <?hh
@@ -289,19 +343,19 @@ use Pi\Interfaces\IContainer;
  */
 class $hydratorClassName {
 
-  public function __construct(
-    protected IContainer &\$container
-  )
-  {
-  
-  }
+    public function __construct(
+      protected IContainer &\$container
+    )
+    {
+    
+    }
 
-  public function get() : \\$className
-  {
-    \$dependencies = array();
-    %s
-    return new \\$className(...\$dependencies);
-  }
+    public function get() : \\$className
+    {
+        \$dependencies = array();
+        %s
+        return new \\$original(...\$dependencies);
+    }
 }
 EOF
     ,
@@ -371,25 +425,53 @@ EOF
     return $this->get($className);
   }
 
+  /**
+   * Inject dependencies using contructor and public properties registered in IOC
+   */
+  public function inject(&$instance)
+  {
+    $className = get_class($instance);
+    $rflClass = null;
+    if(!array_key_exists($className, $this->rflClass)) {
+      $this->rflClass[$className] = $rflClass = new \ReflectionClass($className);
+    } else {
+      $rflClass = $this->rflClass[$className];
+    }
+    self::injectDependencies($this, $instance, $rflClass);
+  }
+
+  public function dispose()
+  {
+    unset($this->registered);
+    unset($this->registered);
+    unset($this->aliases);
+    unset($this->aliasesRepo);
+    unset($this->instances);    
+  }
+
   protected static function createInstance(IContainer $ioc, string $className, InjectionScope $scope)
   {
     $hydrator = $ioc->getHydrator($className);
     return $hydrator->get();
     
-    $rflClass = new \ReflectionClass($className);
+    $this->rflClass[$className] = $rflClass = new \ReflectionClass($className);
     $instance = $rflClass->newInstanceWithoutConstructor();
-    switch($scope) {
-      case InjectionScope::Constructor:
+    //switch($scope) {
+      //case InjectionScope::Constructor:
         self::injectDependenciesByConstructor($ioc, $instance, $rflClass);
-        break;
-      case InjectionScope::Public:
+      //  break;
+      //case InjectionScope::Public:
         self::injectDependenciesByPublicProperties($ioc, $instance, $rflClass);
-        break;
-    }
+      //  break;
+    //}
     return $instance;
   }
-
   
+  protected static function injectDependencies(IContainer $ioc, &$instance, \ReflectionClass $rflClass)
+  {
+    self::injectDependenciesByPublicProperties($ioc, $instance, $rflClass);
+    self::injectDependenciesByConstructor($ioc, $instance, $rflClass);
+  }
 
   protected static function injectDependenciesByPublicProperties(IContainer $ioc, &$instance, \ReflectionClass $rflClass)
   {
@@ -403,7 +485,7 @@ EOF
       }
 
       if(get_parent_class($type) === 'Pi\Odm\MongoRepository') {
-        $repoInstance = $ioc->get($type);
+        $repoInstance = $ioc->getRepository($type);
         $property->setValue($instance, $repoInstance);
       }
       else {
@@ -435,20 +517,11 @@ EOF
 
       $dependencyType = ltrim($dependencyType, '?'); // optional dependencies
 
-      $dependency = $ioc->get($dependencyType);
+      $dependency = $ioc->tryResolve($dependencyType);
       if($dependency === null) {
         continue;
       }
       $instance->$name = $dependency;
     }
-  }
-
-  public function dispose()
-  {
-    unset($this->registered);
-    unset($this->registered);
-    unset($this->aliases);
-    unset($this->aliasesRepo);
-    unset($this->instances);    
   }
 }
