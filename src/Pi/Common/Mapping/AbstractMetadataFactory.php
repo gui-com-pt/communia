@@ -56,8 +56,8 @@ abstract class AbstractMetadataFactory implements IEntityMetaDataFactory, IConta
     if($this->loadedMetadata->contains($className)){
       return $this->loadedMetadata->get($className);
     }
-
-    return $this->loadFromCached($className) ?: $this->loadMetadata($className);
+    return $this->loadMetadata($className);
+    //return $this->loadFromCached($className) ?: $this->loadMetadata($className);
   }
 
 
@@ -71,8 +71,11 @@ abstract class AbstractMetadataFactory implements IEntityMetaDataFactory, IConta
 
   }
 
-  public function loadFromCached(string $name) : ?mixed
+  public function loadFromCached(string $name, ?string $className = null) : ?mixed
   {
+    if(!is_null($className)) {
+      return $this->cacheProvider->getAs($name, $className);
+    }
     return $this->cacheProvider->getObject(self::CACHE_KEY . $name);
   }
 
@@ -87,7 +90,7 @@ abstract class AbstractMetadataFactory implements IEntityMetaDataFactory, IConta
     
   }
 
-  protected function loadMetadata(string $name)
+  public function loadMetadata(string $name)
   {
     if ( ! $this->initialized) {
         $this->initialize();

@@ -12,6 +12,7 @@ use Pi\ReuseScope,
     Pi\Interfaces\DtoMetadataInterface,
     Pi\Validation\AbstractValidator,
     Pi\Host\HostProvider,
+    Pi\Odm\OdmManager,
     Pi\Common\Mapping\HydratorPoviderBase;
 
 
@@ -46,6 +47,11 @@ class StaticContainer implements IContainer {
   {
     $this->reset();
     $this->__hydratorConstruct('/tmp', 'IOC');
+  }
+
+  public function getAllRepositoryAlias()
+  {
+    return $this->aliasesRepo;
   }
 
   public function reset() : void
@@ -145,10 +151,17 @@ class StaticContainer implements IContainer {
    */
   public function get(string $type) : mixed
   {
+    if($type == 'IContainer' || $type == IContainer::class) {
+      return $this;
+    }
     if(isset($this->instances[$type])) {
       return $this->instances[$type];
     } else if(isset($this->aliases[$type]) && isset($this->instances[$this->aliases[$type]])) {
       return $this->instances[$this->aliases[$type]];
+    }
+
+    if(isset($this->aliases[$type])) {
+      $type = $this->aliases[$type];
     }
 
     if(!isset($this->registered[$type])) {
@@ -168,6 +181,12 @@ class StaticContainer implements IContainer {
     }
   }
 
+  public function registerRepositoryAs(string $entityClass, string $repositoryClass, string $repositoryAlias, $namespace = null) : void
+  {
+    //$this->aliases[$repositoryClass] = $repositoryAlias;
+    $this->aliases[$repositoryAlias] = $repositoryClass;
+    $this->registerRepository($entityClass, $repositoryClass);
+  }
 
   public function registerRepository(string $entityClass, string $repositoryClass, $namespace = null) : void
   {
@@ -175,7 +194,7 @@ class StaticContainer implements IContainer {
     $name = $repositoryClass;
     $fn = function(IContainer $ioc) use($repositoryClass, $entityClass) {
       $repositoryInstance = StaticContainer::createInstance($this, $repositoryClass, InjectionScope::Public);
-      $dm = $ioc->get('MongoManager');
+      $dm = $ioc->get(OdmManager::class);
 
       if($dm === null) {
         throw new \Exception('The MongoManager dependency isnt registered.');
@@ -268,7 +287,12 @@ class StaticContainer implements IContainer {
     
     foreach ($map['dependencies'] as $dependencyClass) {
       $code .= sprintf(<<<EOF
-    \$dependencies[] = \$this->container->get('$dependencyClass');
+    if('$dependencyClass' == 'Vector') {
+      \$dependencies[] = Vector{};
+    } else {
+      \$dependencies[] = \$this->container->get('$dependencyClass');  
+    }
+    
 EOF
       );
     }
@@ -369,6 +393,23 @@ EOF
   {
     $this->registered[$className] = true;
     return $this->get($className);
+  }
+
+  public function inject($instance)
+  {
+      $className = get_class($instance);
+      $rflClass = new \ReflectionClass($className);
+      $instance = $rflClass->newInstanceWithoutConstructor();
+    //  self::injectDependenciesByConstructor($this, $instance, $rflClass);
+      self::injectDependenciesByPublicProperties($this, $instance, $rflClass);
+  }
+
+  public function printLog() : string
+  {
+    $registered = count($this->registered);
+    $aliases = count($this->aliases);
+    $instances = count($this->instances);
+    return "$registered registered, $aliases aliases and $instances instances.";
   }
 
   protected static function createInstance(IContainer $ioc, string $className, InjectionScope $scope)

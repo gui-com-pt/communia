@@ -11,6 +11,8 @@ class DebugLogger extends AbstractLogger implements ILog{
   const INFO = "INFO";
   const WARN = "WARN";
 
+  const LOG_FILE = '/var/log/pi/pi.log';
+
   protected $logFile;
 
   protected $separator = '.';
@@ -24,12 +26,12 @@ class DebugLogger extends AbstractLogger implements ILog{
     }
 
     $this->separator = '.';
-    $this->logFile = '/tmp/pi.log';
+    $this->logFile = self::LOG_FILE;
   }
 
   private static function log($message, $exception = null)
   {
-    $path = '/tmp/pi.log';
+    $path = self::LOG_FILE;
 
     if(!is_writable($path)){
     //  throw new \Exception(sprintf('The DebugLogger save directory isnt writable. Fix permissions for: %s', $path));
@@ -50,8 +52,8 @@ class DebugLogger extends AbstractLogger implements ILog{
   private function formatMessage($level, string $message, ?\Exception $exception = null)
   {
     $debugBacktrace = debug_backtrace();
-		$line = $debugBacktrace[1]['line'];
-		$file = $debugBacktrace[1]['file'];
+    $line = $debugBacktrace[1]['line'];
+    $file = $debugBacktrace[1]['file'];
     $datetime = @date("Y-m-d H:i:s");
     if(is_null($exception)) {
       return sprintf("[%s] %s %s %s at line %s of %s\n\r", $this->type, $datetime, $level, $message, $line, $file);

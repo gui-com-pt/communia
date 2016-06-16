@@ -18,6 +18,13 @@ class ApcCacheProvider implements ICacheProvider {
 		$this->enabled = extension_loaded('apc');
 	}
 
+	public function init()
+	{
+		if(!$this->enabled) {
+			throw new \InvalidArgumentException("APC extension not loaded");
+		}
+	}
+
 	public function delete(string $key)
 	{
 		apc_delete(self::CACHE_PREFIX.$key);

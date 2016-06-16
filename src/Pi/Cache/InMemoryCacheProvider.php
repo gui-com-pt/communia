@@ -22,6 +22,11 @@ class InMemoryCacheProvider implements ICacheProvider {
     $this->config = new \StdClass;
   }
 
+  public function init()
+  {
+   
+  }
+
   public function get($key = null)
   {
     if(is_null($key))
