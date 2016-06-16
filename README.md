@@ -1,6 +1,8 @@
 Communia
 ====================
 
+DON'T USE THIS - NOT READ YET!
+
 A common library i created from [pi-framework](https://github.com/guilhermegeek/pi-framework) and i reused in others projects.
 
 A set of tools and common implementations/interfaces i use as well.
